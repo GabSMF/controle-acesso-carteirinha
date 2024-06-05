@@ -10,16 +10,16 @@ MFRC522::MIFARE_Key key;
 
 // Struct para armazenar informações dos alunos
 struct Aluno {
-  String nome;
-  String matricula;
-  String uid;
+  char nome[32];
+  char matricula[8];
+  char uid[5];
 };
 
 // Vetor fixo de alunos
 Aluno alunos[] = {
-  {"João Silva", "20220101", "04A35B6C"},
-  {"Maria Souza", "20220102", "A1B2C3D4"},
-  {"Carlos Lima", "20220103", "B5C6D7E8"}
+  {"Joao Silva", "20220101", "04A3"},
+  {"Maria Souza", "20220102", "A1B2"},
+  {"Carlos Lima", "20220103", "B5C6"}
 };
 
 int numAlunos = sizeof(alunos) / sizeof(alunos[0]);
@@ -40,17 +40,17 @@ void loop() {
     return;
 
   // Convert the UID to a string
-  String uidString = "";
+  char uidString[5] = "";
   for (byte i = 0; i < rfid.uid.size; i++) {
-    uidString += String(rfid.uid.uidByte[i] < 0x10 ? "0" : "");
-    uidString += String(rfid.uid.uidByte[i], HEX);
+    char hex[3];
+    snprintf(hex, sizeof(hex), "%02X", rfid.uid.uidByte[i]);
+    strncat(uidString, hex, sizeof(uidString) - strlen(uidString) - 1);
   }
-  uidString.toUpperCase();
 
   // Verifica se o UID está na lista de alunos
   bool encontrado = false;
   for (int i = 0; i < numAlunos; i++) {
-    if (alunos[i].uid == uidString) {
+    if (strncmp(alunos[i].uid, uidString, sizeof(alunos[i].uid)) == 0) {
       Serial.print("Bem vindo, ");
       Serial.println(alunos[i].nome);
       encontrado = true;
